@@ -1,0 +1,11 @@
+{
+  "name": "telegram-mcp",
+  "description": "Telegram MCP server for Claude Code — send, read, react, edit, delete messages and download attachments via Telegram Bot API.",
+  "version": "1.0.0",
+  "keywords": [
+    "telegram",
+    "messaging",
+    "mcp",
+    "bot"
+  ]
+}
