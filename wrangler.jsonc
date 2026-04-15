@@ -1,0 +1,14 @@
+{
+  "name": "telegram-mcp",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-03-10",
+  "compatibility_flags": ["nodejs_compat"],
+  "migrations": [
+    { "new_sqlite_classes": ["MessageStore"], "tag": "v2" }
+  ],
+  "durable_objects": {
+    "bindings": [
+      { "class_name": "MessageStore", "name": "STORE" }
+    ]
+  }
+}
