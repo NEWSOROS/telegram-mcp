@@ -4,6 +4,8 @@ Telegram MCP server for Claude Code. Deploy your own instance on Cloudflare Work
 
 Claude Code gets 7 tools: `send_message`, `read_messages`, `react`, `edit_message`, `delete_message`, `download_attachment`, `manage_access`.
 
+**Bonus:** includes `bridge.ts` — run locally to control Claude Code from Telegram in real-time.
+
 ## Quick Start
 
 ### 1. Get credentials (3 min)
@@ -149,6 +151,60 @@ console.log((await r.json()).success ? 'Deployed!' : 'Failed');
 
 # Set Telegram webhook (replace URL with yours)
 curl "https://api.telegram.org/bot$TG_BOT_TOKEN/setWebhook?url=https://YOUR-WORKER-URL/webhook"
+```
+
+## Bridge: Control Claude Code from Telegram
+
+The MCP server gives Claude tools to work WITH Telegram. The bridge does the reverse — lets you **control Claude Code FROM Telegram**.
+
+```
+You in Telegram: "fix the bug in auth.ts"
+     ↓ webhook → Worker stores message
+     ↓ bridge.ts polls every 2 sec
+     ↓ passes to Claude Code CLI
+     ↓ Claude reads code, makes fix
+     ↓ sends response back via Worker
+You in Telegram: "Done! Fixed null check in auth.ts:42..."
+```
+
+### Run the bridge
+
+```bash
+# Set your Worker URL in .env
+echo "MCP_URL=https://tg.tlinks.online" >> .env
+
+# Run
+bun run bridge.ts
+```
+
+The bridge auto-detects Claude CLI location. Override with `CLAUDE_PATH` if needed.
+
+### Bridge environment variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `MCP_URL` | (required) | Your Worker URL, e.g. `https://tg.tlinks.online` |
+| `CLAUDE_PATH` | (auto-detect) | Path to `claude` / `claude.exe` CLI |
+| `POLL_INTERVAL` | `2000` | How often to check for new messages (ms) |
+| `WORK_DIR` | current dir | Working directory for Claude Code |
+
+### How it works
+
+1. Polls `read_messages` from your Worker every 2 seconds
+2. New messages get passed to `claude --print "message"`
+3. Claude's response is sent back via `send_message`
+4. Old messages are skipped on startup (only processes new ones)
+
+### Keep it running
+
+```bash
+# Linux/macOS: run in background
+nohup bun run bridge.ts &
+
+# Or use tmux/screen
+tmux new -s bridge "bun run bridge.ts"
+
+# Windows: just keep the terminal open, or use Task Scheduler
 ```
 
 ## Architecture
